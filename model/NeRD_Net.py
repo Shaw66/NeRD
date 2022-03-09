@@ -55,7 +55,7 @@ class NeRD_Net(torch.nn.Module):
         self.cm_bn5 = nn.BatchNorm1d(output_dim)
 
         # copynumber
-        self.cc_fc1 = nn.Linear(256, 1024)
+        self.cc_fc1 = nn.Linear(512, 1024)
         self.cc_bn1 = nn.BatchNorm1d(1024)
         self.cc_fc2 = nn.Linear(1024, 256)
         self.cc_bn2 = nn.BatchNorm1d(256)
