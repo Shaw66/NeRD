@@ -56,35 +56,9 @@ def train(modeling, train_batch, val_batch, test_batch, lr, epoch_num, cuda_name
     val_data = TestbedDataset(root='data', dataset='val_set')
     test_data = TestbedDataset(root='data', dataset='test_set')
 
-    # train_data_choose = []
-    # val_data_choose = []
-    # test_data_choose = []
-    # num = 16
-    # cnt = 0
-    # for train_item in train_data:
-    #     if cnt % num == 0:
-    #         train_data_choose.append(train_item)
-    #     cnt = cnt + 1
-    #
-    # cnt = 0
-    # for val_item in val_data:
-    #     if cnt % num == 0:
-    #         val_data_choose.append(val_item)
-    #     cnt = cnt + 1
-    #
-    # cnt = 0
-    # for test_item in test_data:
-    #     if cnt % num == 0:
-    #         test_data_choose.append(test_item)
-    #     cnt = cnt + 1
-
-    # make data PyTorch mini-batch processing ready
     train_loader = DataLoader(train_data, batch_size=train_batch, shuffle=True)
     val_loader = DataLoader(val_data, batch_size=val_batch, shuffle=False)
     test_loader = DataLoader(test_data, batch_size=test_batch, shuffle=False)
-    # train_loader = DataLoader(train_data_choose, batch_size=train_batch, shuffle=True)
-    # val_loader = DataLoader(val_data_choose, batch_size=val_batch, shuffle=False)
-    # test_loader = DataLoader(test_data_choose, batch_size=test_batch, shuffle=False)
 
     # training the model
     device = torch.device(cuda_name if torch.cuda.is_available() else "cpu")
