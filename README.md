@@ -1,4 +1,5 @@
-# NeRD: a multichannel neural network to predict cellular response of drugs by integrating multidimensional data
+# NeRD
+A multichannel neural network to predict cellular response of drugs by integrating multidimensional data
 ## Data
 1. drug_response_data: drug response data from the PRISM database  
 2. 388-cell-line-list: list of cell lines we use  
