@@ -182,5 +182,229 @@ def read_response_data_and_process(filename):
     return
 
 
+def process_blind_cell(filename):
+    # load features
+    drug_dict, drug_properties = read_drug_list_and_properties('data/drug/1448-269dim-physicochemical.csv')
+    finger = read_drug_finger('data/drug/1448-881dim-fingerprint.csv', drug_dict)
+    smile = read_drug_smiles('data/drug/drug_smiles.csv', drug_dict)
+    smile_graph = get_all_graph(smile)
+    cell_line_dict = read_cell_line_list('data/cell_line/388-cell-line-list.csv')
+    miRNA = read_cell_line_miRNA('data/cell_line/470-734dim-miRNA.csv', cell_line_dict)
+    copynumber = pickle.load(open('data/cell_line/256dim_copynumber.pkl', 'rb'))  # Copy number pre-reduced by AE
+
+    # feature normalization
+    min_max_scaler = preprocessing.MinMaxScaler(feature_range=(0, 1), copy=False)
+    miRNA = min_max_scaler.fit_transform(miRNA)
+    copynumber = min_max_scaler.fit_transform(copynumber)
+
+    # read response data
+    f = open(filename, 'r')
+    reader = csv.reader(f)
+    reader.__next__()
+    data = []
+    for line in reader:
+        drug = line[3]
+        cell_line = line[0]
+        ic50 = float(line[8])
+        data.append((drug, cell_line, ic50))
+    random.shuffle(data)
+
+    dict_drug_cell = {}
+
+    for item in data:
+        drug, cell_line, ic50 = item
+        if drug in drug_dict and cell_line in cell_line_dict:
+            if cell_line in dict_drug_cell:
+                dict_drug_cell[cell_line].append((drug, ic50))
+            else:
+                dict_drug_cell[cell_line] = [(drug, ic50)]
+
+    for i in range(5):
+        total_size = len(dict_drug_cell)
+        size = int(total_size * i * 0.2)
+        size1 = size + int(total_size * 0.1)
+        size2 = int(total_size * (i + 1) * 0.2)
+
+        drugsmile_train = []
+        drugfinger_train = []
+        cellmiRNA_train = []
+        cellcopy_train = []
+        label_train = []
+
+        drugsmile_val = []
+        drugfinger_val = []
+        cellmiRNA_val = []
+        cellcopy_val = []
+        label_val = []
+
+        drugsmile_test = []
+        drugfinger_test = []
+        cellmiRNA_test = []
+        cellcopy_test = []
+        label_test = []
+
+        pos = 0
+        for cell, values in dict_drug_cell.items():
+            pos += 1
+            for v in values:
+                drug, ic50 = v
+                if pos >= size and pos < size1:
+                    drugsmile_test.append(smile[drug_dict[drug]])
+                    drugfinger_test.append(finger[drug_dict[drug]])
+                    cellmiRNA_test.append(miRNA[cell_line_dict[cell]])
+                    cellcopy_test.append(copynumber[cell_line_dict[cell]])
+                    label_test.append(ic50)
+                elif pos >= size1 and pos < size2:
+                    drugsmile_val.append(smile[drug_dict[drug]])
+                    drugfinger_val.append(finger[drug_dict[drug]])
+                    cellmiRNA_val.append(miRNA[cell_line_dict[cell]])
+                    cellcopy_val.append(copynumber[cell_line_dict[cell]])
+                    label_val.append(ic50)
+                else:
+                    drugsmile_train.append(smile[drug_dict[drug]])
+                    drugfinger_train.append(finger[drug_dict[drug]])
+                    cellmiRNA_train.append(miRNA[cell_line_dict[cell]])
+                    cellcopy_train.append(copynumber[cell_line_dict[cell]])
+                    label_train.append(ic50)
+
+        drugsmile_train, drugfinger_train = np.asarray(drugsmile_train), np.asarray(drugfinger_train)
+        cellmiRNA_train, cellcopy_train = np.asarray(cellmiRNA_train), np.asarray(cellcopy_train)
+        label_train = np.asarray(label_train)
+
+        drugsmile_val, drugfinger_val = np.asarray(drugsmile_val), np.asarray(drugfinger_val)
+        cellmiRNA_val, cellcopy_val = np.asarray(cellmiRNA_val), np.asarray(cellcopy_val)
+        label_val = np.asarray(label_val)
+
+        drugsmile_test, drugfinger_test = np.asarray(drugsmile_test), np.asarray(drugfinger_test)
+        cellmiRNA_test, cellcopy_test = np.asarray(cellmiRNA_test), np.asarray(cellcopy_test)
+        label_test = np.asarray(label_test)
+
+        TestbedDataset(root='data', dataset='train_blind_cell{num}'.format(num=i), xdf=drugfinger_train,
+                       xds=drugsmile_train,
+                       xcm=cellmiRNA_train, xcc=cellcopy_train,
+                       y=label_train, smile_graph=smile_graph)
+        TestbedDataset(root='data', dataset='val_blind_cell{num}'.format(num=i), xdf=drugfinger_val, xds=drugsmile_val,
+                       xcm=cellmiRNA_val, xcc=cellcopy_val,
+                       y=label_val, smile_graph=smile_graph)
+        TestbedDataset(root='data', dataset='test_blind_cell{num}'.format(num=i), xdf=drugfinger_test, xds=drugsmile_test,
+                       xcm=cellmiRNA_test, xcc=cellcopy_test,
+                       y=label_test, smile_graph=smile_graph)
+
+    return
+
+
+def process_blind_drug(filename):
+    # load features
+    drug_dict, drug_properties = read_drug_list_and_properties('data/drug/1448-269dim-physicochemical.csv')
+    finger = read_drug_finger('data/drug/1448-881dim-fingerprint.csv', drug_dict)
+    smile = read_drug_smiles('data/drug/drug_smiles.csv', drug_dict)
+    smile_graph = get_all_graph(smile)
+    cell_line_dict = read_cell_line_list('data/cell_line/388-cell-line-list.csv')
+    miRNA = read_cell_line_miRNA('data/cell_line/470-734dim-miRNA.csv', cell_line_dict)
+    copynumber = pickle.load(open('data/cell_line/256dim_copynumber.pkl', 'rb'))  # Copy number pre-reduced by AE
+
+    # feature normalization
+    min_max_scaler = preprocessing.MinMaxScaler(feature_range=(0, 1), copy=False)
+    miRNA = min_max_scaler.fit_transform(miRNA)
+    copynumber = min_max_scaler.fit_transform(copynumber)
+
+    # read response data
+    f = open(filename, 'r')
+    reader = csv.reader(f)
+    reader.__next__()
+    data = []
+    for line in reader:
+        drug = line[3]
+        cell_line = line[0]
+        ic50 = float(line[8])
+        data.append((drug, cell_line, ic50))
+    random.shuffle(data)
+
+    dict_drug_cell = {}
+
+    for item in data:
+        drug, cell_line, ic50 = item
+        if drug in drug_dict and cell_line in cell_line_dict:
+            if drug in dict_drug_cell:
+                dict_drug_cell[drug].append((cell_line, ic50))
+            else:
+                dict_drug_cell[drug] = [(cell_line, ic50)]
+
+    for i in range(5):
+        total_size = len(dict_drug_cell)
+        size = int(total_size * i * 0.2)
+        size1 = size + int(total_size * 0.1)
+        size2 = int(total_size * (i + 1) * 0.2)
+
+        drugsmile_train = []
+        drugfinger_train = []
+        cellmiRNA_train = []
+        cellcopy_train = []
+        label_train = []
+
+        drugsmile_val = []
+        drugfinger_val = []
+        cellmiRNA_val = []
+        cellcopy_val = []
+        label_val = []
+
+        drugsmile_test = []
+        drugfinger_test = []
+        cellmiRNA_test = []
+        cellcopy_test = []
+        label_test = []
+
+        pos = 0
+        for drug, values in dict_drug_cell.items():
+            pos += 1
+            for v in values:
+                cell, ic50 = v
+                if pos >= size and pos < size1:
+                    drugsmile_test.append(smile[drug_dict[drug]])
+                    drugfinger_test.append(finger[drug_dict[drug]])
+                    cellmiRNA_test.append(miRNA[cell_line_dict[cell]])
+                    cellcopy_test.append(copynumber[cell_line_dict[cell]])
+                    label_test.append(ic50)
+                elif pos >= size1 and pos < size2:
+                    drugsmile_val.append(smile[drug_dict[drug]])
+                    drugfinger_val.append(finger[drug_dict[drug]])
+                    cellmiRNA_val.append(miRNA[cell_line_dict[cell]])
+                    cellcopy_val.append(copynumber[cell_line_dict[cell]])
+                    label_val.append(ic50)
+                else:
+                    drugsmile_train.append(smile[drug_dict[drug]])
+                    drugfinger_train.append(finger[drug_dict[drug]])
+                    cellmiRNA_train.append(miRNA[cell_line_dict[cell]])
+                    cellcopy_train.append(copynumber[cell_line_dict[cell]])
+                    label_train.append(ic50)
+
+        drugsmile_train, drugfinger_train = np.asarray(drugsmile_train), np.asarray(drugfinger_train)
+        cellmiRNA_train, cellcopy_train = np.asarray(cellmiRNA_train), np.asarray(cellcopy_train)
+        label_train = np.asarray(label_train)
+
+        drugsmile_val, drugfinger_val = np.asarray(drugsmile_val), np.asarray(drugfinger_val)
+        cellmiRNA_val, cellcopy_val = np.asarray(cellmiRNA_val), np.asarray(cellcopy_val)
+        label_val = np.asarray(label_val)
+
+        drugsmile_test, drugfinger_test = np.asarray(drugsmile_test), np.asarray(drugfinger_test)
+        cellmiRNA_test, cellcopy_test = np.asarray(cellmiRNA_test), np.asarray(cellcopy_test)
+        label_test = np.asarray(label_test)
+
+        TestbedDataset(root='data', dataset='train_blind_drug{num}'.format(num=i), xdf=drugfinger_train,
+                       xds=drugsmile_train,
+                       xcm=cellmiRNA_train, xcc=cellcopy_train,
+                       y=label_train, smile_graph=smile_graph)
+        TestbedDataset(root='data', dataset='val_blind_drug{num}'.format(num=i), xdf=drugfinger_val, xds=drugsmile_val,
+                       xcm=cellmiRNA_val, xcc=cellcopy_val,
+                       y=label_val, smile_graph=smile_graph)
+        TestbedDataset(root='data', dataset='test_blind_drug{num}'.format(num=i), xdf=drugfinger_test, xds=drugsmile_test,
+                       xcm=cellmiRNA_test, xcc=cellcopy_test,
+                       y=label_test, smile_graph=smile_graph)
+
+    return
+
+
 if __name__ == "__main__":
     read_response_data_and_process('data/label/drug_response_data.csv')
+    # process_blind_cell('data/label/drug_response_data.csv')
+    # process_blind_drug('data/label/drug_response_data.csv')
