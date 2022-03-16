@@ -12,7 +12,7 @@ A multichannel neural network to predict cellular response of drugs by integrati
 1. preprocess.py: load data and convert to pytorch format  
 2. train.py: train the model and make predictions  
 3. functions.py: some custom functions  
-4. simles2graph: convert SMILES sequence to graph  
+4. simles2graph.py: convert SMILES sequence to graph  
 5. AE.py: dimensionality reduction for ultra-high dimensional features  
 6. NeRD_Net.py: multi-channel neural network model 
 ## Operation steps
