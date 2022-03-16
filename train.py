@@ -45,16 +45,16 @@ def predict(model, device, data_loader):
     return total_labels.numpy().flatten(), total_preds.numpy().flatten()
 
 
-def train(modeling, train_batch, val_batch, test_batch, lr, epoch_num, cuda_name):
+def train(modeling, train_batch, val_batch, test_batch, lr, epoch_num, cuda_name, i):
 
     model_st = modeling.__name__
     train_losses = []
     val_losses = []
     val_pearsons = []
     val_r2 = []
-    train_data = TestbedDataset(root='data', dataset='train_set')
-    val_data = TestbedDataset(root='data', dataset='val_set')
-    test_data = TestbedDataset(root='data', dataset='test_set')
+    train_data = TestbedDataset(root='data', dataset='train_set{num}'.format(num=i))
+    val_data = TestbedDataset(root='data', dataset='val_set{num}'.format(num=i))
+    test_data = TestbedDataset(root='data', dataset='test_set{num}'.format(num=i))
 
     train_loader = DataLoader(train_data, batch_size=train_batch, shuffle=True)
     val_loader = DataLoader(val_data, batch_size=val_batch, shuffle=False)
@@ -83,8 +83,8 @@ def train(modeling, train_batch, val_batch, test_batch, lr, epoch_num, cuda_name
         val_r2.append(ret[4])
 
         if ret[1] < best_mse:
-            torch.save(model.state_dict(), 'result/model.model')
-            with open('result/result.csv', 'w') as f:
+            torch.save(model.state_dict(), 'result{num}/model.model'.format(num=i))
+            with open('result{num}/result.csv'.format(num=i), 'w') as f:
                 f.write(','.join(map(str, ret_test)))
             best_epoch = epoch + 1
             best_mse = ret[1]
@@ -93,8 +93,8 @@ def train(modeling, train_batch, val_batch, test_batch, lr, epoch_num, cuda_name
         else:
             print(' no improvement since epoch ', best_epoch, '; best_mse, best pearson:', best_mse, best_pearson, model_st)
 
-        draw_loss(train_losses, val_losses, 'Loss', 'result/loss')
-        draw_pearson_r2(val_pearsons, val_r2, 'Pearson&R²', 'result/Pearson_R2')
+        # draw_loss(train_losses, val_losses, 'Loss', 'result{num}/loss'.format(num=i))
+        # draw_pearson_r2(val_pearsons, val_r2, 'Pearson&R²', 'result{num}/Pearson_R2'.format(num=i))
 
 
 if __name__ == "__main__":
@@ -116,4 +116,5 @@ if __name__ == "__main__":
     num_epoch = args.num_epoch
     cuda_name = args.cuda_name
 
-    train(modeling, train_batch, val_batch, test_batch, lr, num_epoch, cuda_name)
+    for i in range(5):
+        train(modeling, train_batch, val_batch, test_batch, lr, num_epoch, cuda_name, i)
