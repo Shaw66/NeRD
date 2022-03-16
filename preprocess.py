@@ -142,39 +142,42 @@ def read_response_data_and_process(filename):
     cell_miRNA, cell_copy = np.asarray(cell_miRNA), np.asarray(cell_copy)
     label = np.asarray(label)
 
-    train_size = int(drug_smile.shape[0] * 0.8)
-    train_and_val_size = int(drug_smile.shape[0] * 0.9)
-    # features of drug fingers
-    drugfinger_train = drug_finger[:train_size]
-    drugfinger_val = drug_finger[train_size:train_and_val_size]
-    drugfinger_test = drug_finger[train_and_val_size:]
-    # features of drug smiles
-    drugsmile_train = drug_smile[:train_size]
-    drugsmile_val = drug_smile[train_size:train_and_val_size]
-    drugsmile_test = drug_smile[train_and_val_size:]
-    # features of cell miRNA
-    cellmiRNA_train = cell_miRNA[:train_size]
-    cellmiRNA_val = cell_miRNA[train_size:train_and_val_size]
-    cellmiRNA_test = cell_miRNA[train_and_val_size:]
-    # features of cell copynumber
-    cellcopy_train = cell_copy[:train_size]
-    cellcopy_val = cell_copy[train_size:train_and_val_size]
-    cellcopy_test = cell_copy[train_and_val_size:]
-    # label
-    label_train = label[:train_size]
-    label_val = label[train_size:train_and_val_size]
-    label_test = label[train_and_val_size:]
+    for i in range(5):
+        total_size = drug_smile.shape[0]
+        size_0 = int(total_size * 0.2 * i)
+        size_1 = size_0 + int(total_size * 0.1)
+        size_2 = int(total_size * 0.2 * (i + 1))
+        # features of drug fingers
+        drugfinger_train = drug_finger[size_0:size_1]
+        drugfinger_val = drug_finger[size_1:size_2]
+        drugfinger_test = np.concatenate((drug_finger[:size_0], drug_finger[size_2:]), axis=0)
+        # features of drug smiles
+        drugsmile_train = drug_smile[size_0:size_1]
+        drugsmile_val = drug_smile[size_1:size_2]
+        drugsmile_test = np.concatenate((drug_smile[:size_0], drug_smile[size_2:]), axis=0)
+        # features of cell miRNA
+        cellmiRNA_train = cell_miRNA[size_0:size_1]
+        cellmiRNA_val = cell_miRNA[size_1:size_2]
+        cellmiRNA_test = np.concatenate((cell_miRNA[:size_0], cell_miRNA[size_2:]), axis=0)
+        # features of cell copynumber
+        cellcopy_train = cell_copy[size_0:size_1]
+        cellcopy_val = cell_copy[size_1:size_2]
+        cellcopy_test = np.concatenate((cell_copy[:size_0], cell_copy[size_2:]), axis=0)
+        # label
+        label_train = label[size_0:size_1]
+        label_val = label[size_1:size_2]
+        label_test = np.concatenate((label[:size_0], label[size_2:]), axis=0)
 
-    TestbedDataset(root='data', dataset='train_set', xdf=drugfinger_train,
-                   xds=drugsmile_train,
-                   xcm=cellmiRNA_train, xcc=cellcopy_train,
-                   y=label_train, smile_graph=smile_graph)
-    TestbedDataset(root='data', dataset='val_set', xdf=drugfinger_val, xds=drugsmile_val,
-                   xcm=cellmiRNA_val, xcc=cellcopy_val,
-                   y=label_val, smile_graph=smile_graph)
-    TestbedDataset(root='data', dataset='test_set', xdf=drugfinger_test, xds=drugsmile_test,
-                   xcm=cellmiRNA_test, xcc=cellcopy_test,
-                   y=label_test, smile_graph=smile_graph)
+        TestbedDataset(root='data', dataset='train_set{num}'.format(num=i), xdf=drugfinger_train,
+                       xds=drugsmile_train,
+                       xcm=cellmiRNA_train, xcc=cellcopy_train,
+                       y=label_train, smile_graph=smile_graph)
+        TestbedDataset(root='data', dataset='val_set{num}'.format(num=i), xdf=drugfinger_val, xds=drugsmile_val,
+                       xcm=cellmiRNA_val, xcc=cellcopy_val,
+                       y=label_val, smile_graph=smile_graph)
+        TestbedDataset(root='data', dataset='test_set{num}'.format(num=i), xdf=drugfinger_test, xds=drugsmile_test,
+                       xcm=cellmiRNA_test, xcc=cellcopy_test,
+                       y=label_test, smile_graph=smile_graph)
 
     return
 
