@@ -148,25 +148,25 @@ def read_response_data_and_process(filename):
         size_1 = size_0 + int(total_size * 0.1)
         size_2 = int(total_size * 0.2 * (i + 1))
         # features of drug fingers
-        drugfinger_train = drug_finger[size_0:size_1]
+        drugfinger_test = drug_finger[size_0:size_1]
         drugfinger_val = drug_finger[size_1:size_2]
-        drugfinger_test = np.concatenate((drug_finger[:size_0], drug_finger[size_2:]), axis=0)
+        drugfinger_train = np.concatenate((drug_finger[:size_0], drug_finger[size_2:]), axis=0)
         # features of drug smiles
-        drugsmile_train = drug_smile[size_0:size_1]
+        drugsmile_test = drug_smile[size_0:size_1]
         drugsmile_val = drug_smile[size_1:size_2]
-        drugsmile_test = np.concatenate((drug_smile[:size_0], drug_smile[size_2:]), axis=0)
+        drugsmile_train = np.concatenate((drug_smile[:size_0], drug_smile[size_2:]), axis=0)
         # features of cell miRNA
-        cellmiRNA_train = cell_miRNA[size_0:size_1]
+        cellmiRNA_test = cell_miRNA[size_0:size_1]
         cellmiRNA_val = cell_miRNA[size_1:size_2]
-        cellmiRNA_test = np.concatenate((cell_miRNA[:size_0], cell_miRNA[size_2:]), axis=0)
+        cellmiRNA_train = np.concatenate((cell_miRNA[:size_0], cell_miRNA[size_2:]), axis=0)
         # features of cell copynumber
-        cellcopy_train = cell_copy[size_0:size_1]
+        cellcopy_test = cell_copy[size_0:size_1]
         cellcopy_val = cell_copy[size_1:size_2]
-        cellcopy_test = np.concatenate((cell_copy[:size_0], cell_copy[size_2:]), axis=0)
+        cellcopy_train = np.concatenate((cell_copy[:size_0], cell_copy[size_2:]), axis=0)
         # label
-        label_train = label[size_0:size_1]
+        label_test = label[size_0:size_1]
         label_val = label[size_1:size_2]
-        label_test = np.concatenate((label[:size_0], label[size_2:]), axis=0)
+        label_train = np.concatenate((label[:size_0], label[size_2:]), axis=0)
 
         TestbedDataset(root='data', dataset='train_set{num}'.format(num=i), xdf=drugfinger_train,
                        xds=drugsmile_train,
