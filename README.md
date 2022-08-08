@@ -35,4 +35,3 @@ scipy
 sklearn  
 rdkit  
 networkx
-
