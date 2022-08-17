@@ -24,8 +24,8 @@ A multichannel neural network to predict cellular response of drugs by integrati
 ## How to use it with other data instances?
 1. Process the drug response data you want to use into csv format, with each entry containing the drug id, cell line id, and response value.
 2. Organize all cell line IDs and drug IDs into two lists and store them in two csv files respectively.
-3. Download the features of the drugs in the list, including SMILES and molecular fingerprints, from …. Then process it into the format of the feature data we uploaded.
-4. Download the features of the cell lines in the list, including miRNA and copy number, from …. Then process it into the format of the feature data we uploaded.
+3. Download the features of the drugs in the list, including SMILES and molecular fingerprints, from PubChem compound database. Then process them into the format of the feature data we uploaded.
+4. Download the features of the cell lines in the list, including miRNA and copy number, from CCLE database. Then process them into the format of the feature data we uploaded.
 5. Run the program as “Step-by-step instructions” (2)-(5).
 ## Dependencies 
 torch1.4  
